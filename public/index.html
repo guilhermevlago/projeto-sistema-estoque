@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Estoque | Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="./css/styles.css">
+    <script src="./js/utils.js"></script>
+</head>
+<body class="d-flex justify-content-center align-items-center vh-100 bg-light">
+    <div class="card shadow-lg border-0" style="width: 420px;">
+        <div class="card-header bg-primary text-white text-center py-3">
+            <h4 class="mb-0" style="color: white;">
+                <i class="bi bi-box-seam me-2" style="color: white;"></i>
+                Sistema de Estoque
+            </h4>
+        </div>
+        <div class="card-body p-4">
+            <h5 class="card-title text-center mb-4 text-muted">Faça seu login</h5>
+            <form id="login-form">
+                <div class="mb-3">
+                    <label for="username" class="form-label">
+                        <i class="bi bi-person me-1"></i>
+                        Usuário
+                    </label>
+                    <input type="text" class="form-control" id="username" placeholder="Digite seu usuário" required autocomplete="username">
+                </div>
+                <div class="mb-3">
+                    <label for="senha" class="form-label">
+                        <i class="bi bi-lock me-1"></i>
+                        Senha
+                    </label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="senha" placeholder="Digite sua senha" required autocomplete="current-password">
+                        <button class="btn btn-outline-secondary" type="button" id="toggleSenha" title="Mostrar/Ocultar senha">
+                            <i class="bi bi-eye" id="iconeSenha"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="login-erro" class="alert alert-danger d-none"></div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary" id="btnLogin">
+                        <span id="spinner" class="spinner-border spinner-border-sm me-2 d-none"></span>
+                        <i class="bi bi-box-arrow-in-right me-2" id="iconLogin"></i>
+                        Entrar
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="card-footer text-center text-muted py-2">
+            <small>&copy; 2025 Sistema de Controle de Estoque</small>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const toggleSenha = document.getElementById('toggleSenha');
+        const senhaInput = document.getElementById('senha');
+        const iconeSenha = document.getElementById('iconeSenha');
+
+        toggleSenha.addEventListener('click', function() {
+            const type = senhaInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            senhaInput.setAttribute('type', type);
+            iconeSenha.className = type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+        });
+
+        const form = document.getElementById('login-form');
+        const btnLogin = document.getElementById('btnLogin');
+        const spinner = document.getElementById('spinner');
+        const iconLogin = document.getElementById('iconLogin');
+        const erroDiv = document.getElementById('login-erro');
+
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const usuario = document.getElementById('username').value.trim();
+            const senha = document.getElementById('senha').value;
+
+            if (!usuario || !senha) {
+                mostrarErro('Por favor, preencha todos os campos.');
+                return;
+            }
+
+            btnLogin.disabled = true;
+            spinner.classList.remove('d-none');
+            iconLogin.classList.add('d-none');
+            erroDiv.classList.add('d-none');
+
+            try {
+                const response = await fetch('https://projeto-estoque-production.up.railway.app/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario, senha })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.token) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('perfil', data.perfil);
+                    localStorage.setItem('nome', data.nome);
+                    
+                    setTimeout(() => {
+                        window.location.href = './html/inicio.html';
+                    }, 500);
+                } else {
+                    mostrarErro(data.error || 'Usuário ou senha inválidos.');
+                }
+            } catch (err) {
+                mostrarErro('Erro ao conectar ao servidor. Tente novamente.');
+            } finally {
+                btnLogin.disabled = false;
+                spinner.classList.add('d-none');
+                iconLogin.classList.remove('d-none');
+            }
+        });
+
+        function mostrarErro(mensagem) {
+            erroDiv.textContent = mensagem;
+            erroDiv.classList.remove('d-none');
+            
+            setTimeout(() => {
+                erroDiv.classList.add('d-none');
+            }, 5000);
+        }
+
+        senhaInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                form.dispatchEvent(new Event('submit'));
+            }
+        });
+
+        if (localStorage.getItem('token')) {
+            window.location.href = './html/inicio.html';
+        }
+    </script>
+</body>
+</html>

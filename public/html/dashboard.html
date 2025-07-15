@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard | Sistema de Estoque</title>
+  <script src="../js/utils.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body class="d-flex" data-page="dashboard">
+
+  <div id="navbar-placeholder"></div>
+  <script src="../js/navbar.js"></script>
+
+  <div id="page-content" class="flex-grow-1 p-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
+      <div>
+        <h1 class="mb-1 fw-bold">Olá, <span id="nome-usuario-dashboard">Usuário</span>!</h1>
+      </div>
+    </div>
+    
+    <div class="row g-2 mb-3 justify-content-center" id="dashboard-cards">
+    </div>
+
+    <div class="row g-4 align-items-stretch">
+      <div class="col-lg-6 d-flex">
+        <div class="dashboard-grafico-mov bg-white p-3 rounded-4 shadow-sm flex-fill d-flex flex-column justify-content-center align-items-center">
+          <div class="w-100 mb-2">
+            <h5 class="mb-1 text-center">Movimentações</h5>
+            <div class="d-flex align-items-center justify-content-center gap-2">
+              <label for="filtroPeriodo" class="form-label mb-0">Período:</label>
+              <select id="filtroPeriodo" class="form-select form-select-sm d-inline-block" style="width:auto; min-width:100px;">
+                <option value="dia">Dia</option>
+                <option value="semana">Semana</option>
+                <option value="mes" selected>Mês</option>
+                <option value="ano">Ano</option>
+              </select>
+            </div>
+          </div>
+          <div class="chart-container flex-grow-1 w-100 d-flex align-items-center justify-content-center">
+            <canvas id="canvas-movimentacoes" width="600" height="340"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6 d-flex flex-column justify-content-between">
+        <div class="dashboard-grafico-pizza bg-white p-3 rounded-4 shadow-sm mb-3 d-flex align-items-center">
+          <div class="pizza-container flex-shrink-0">
+            <canvas id="canvas-mais-entradas"></canvas>
+          </div>
+          <div class="ms-4 flex-grow-1">
+            <h6 class="mb-2 fw-bold text-success">Mais Entradas</h6>
+            <ul id="legenda-mais-entradas" class="list-unstyled mb-0 small"></ul>
+          </div>
+        </div>
+        <div class="dashboard-grafico-pizza bg-white p-3 rounded-4 shadow-sm d-flex align-items-center">
+          <div class="pizza-container flex-shrink-0">
+            <canvas id="canvas-mais-saidas"></canvas>
+          </div>
+          <div class="ms-4 flex-grow-1">
+            <h6 class="mb-2 fw-bold text-warning">Mais Saídas</h6>
+            <ul id="legenda-mais-saidas" class="list-unstyled mb-0 small"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white p-4 rounded-4 shadow-sm mt-4 w-100 relatorio-dashboard">
+      <div class="d-flex align-items-center flex-wrap gap-2 mb-3">
+        <h5 class="mb-0 me-3">Gerar relatório</h5>
+        <label class="form-check-label me-2">
+          <input type="checkbox" class="form-check-input me-1" id="relatorio-entrada" checked> Entradas
+        </label>
+        <label class="form-check-label me-2">
+          <input type="checkbox" class="form-check-input me-1" id="relatorio-saida" checked> Saídas
+        </label>
+        <label class="form-check-label me-2">
+          <input type="checkbox" class="form-check-input me-1" id="relatorio-cadastro" checked> Cadastros
+        </label>
+        <label class="form-label mb-0 ms-2">Período:</label>
+        <input type="date" id="relatorio-data-inicio" class="form-control form-control-sm me-2" style="width: 140px;">
+        <span class="mx-1">a</span>
+        <input type="date" id="relatorio-data-fim" class="form-control form-control-sm me-2" style="width: 140px;">
+        <button id="btn-exportar-csv" class="btn btn-outline-secondary btn-sm me-2" title="Exportar como CSV" aria-label="Exportar como CSV">
+          <i class="bi bi-file-earmark-spreadsheet"></i> CSV
+        </button>
+        <button id="btn-exportar-pdf" class="btn btn-outline-secondary btn-sm me-2">
+          <i class="bi bi-file-earmark-pdf"></i> PDF
+        </button>
+        <label class="d-flex align-items-center mb-0 ms-2">
+          <input type="checkbox" id="incluirGrafico" style="margin-right: 8px;" /> Com gráfico
+        </label>
+        <span class="text-muted ms-2" style="font-size: 0.95em;">(O gráfico é incluído apenas no PDF)</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="../js/pdf-utils.js"></script>
+  <script type="module">
+    import { gerarCSVMovimentacoes } from '../js/csv-utils.js';
+
+    verificarLogin({ redirect: 'inicio.html', perfilPermitido: ['2', '3'] });
+    const token = localStorage.getItem('token');
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const nome = localStorage.getItem('nome') || 'Usuário';
+      document.getElementById('nome-usuario-dashboard').textContent = nome;
+    });
+
+    async function carregarDashboard() {
+      const cards = [
+        { titulo: 'Produtos', valor: '-', cor: 'primary', link: 'listagem.html', texto: 'Ver Todos', icon: 'bi-box-seam' },
+        { titulo: 'Estoque Baixo', valor: '-', cor: 'danger', link: 'listagem.html?alerta=1', texto: 'Ver Detalhes', icon: 'bi-exclamation-triangle' },
+        { titulo: 'Entradas/Mês', valor: '-', cor: 'success', link: 'historico.html?acao=entrada', texto: 'Ver Entradas', icon: 'bi-arrow-down-circle' },
+        { titulo: 'Saídas/Mês', valor: '-', cor: 'warning', link: 'historico.html?acao=saida', texto: 'Ver Saídas', icon: 'bi-arrow-up-circle' }
+      ];
+
+      try {
+        const resProdutos = await fetch('https://projeto-estoque-production.up.railway.app/api/produtos', {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        if (resProdutos.ok) {
+          const produtos = await resProdutos.json();
+          cards[0].valor = produtos.length;
+          const qtdBaixo = produtos.filter(p => p.estoque_atual !== null && p.estoque_minimo !== null && p.estoque_atual <= p.estoque_minimo).length;
+          cards[1].valor = qtdBaixo;
+        }
+      } catch {}
+
+      try {
+        const resMov = await fetch('https://projeto-estoque-production.up.railway.app/api/movimentacoes', {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        if (resMov.ok) {
+          const movs = await resMov.json();
+          const mesAtual = new Date().getMonth() + 1;
+          const anoAtual = new Date().getFullYear();
+          cards[2].valor = movs.filter(m => m.tipo === 'entrada' && new Date(m.created_at).getMonth() + 1 === mesAtual && new Date(m.created_at).getFullYear() === anoAtual).length;
+          cards[3].valor = movs.filter(m => m.tipo === 'saida' && new Date(m.created_at).getMonth() + 1 === mesAtual && new Date(m.created_at).getFullYear() === anoAtual).length;
+        }
+      } catch {}
+
+      document.getElementById('dashboard-cards').innerHTML = cards.map(card => `
+  <div class="col-6 col-sm-3">
+    <div class="card h-100 border-0 shadow-sm small-card">
+      <div class="card-body text-center py-2 px-1">
+        <div class="card-title mb-1 small d-flex align-items-center justify-content-center gap-1">
+          <i class="bi ${card.icon} fs-5 text-${card.cor}"></i>
+          <span>${card.titulo}</span>
+        </div>
+        <div class="h5 text-${card.cor} mb-1">${card.valor}</div>
+        <a href="${card.link}" class="btn btn-xs btn-outline-${card.cor}">${card.texto}</a>
+      </div>
+    </div>
+  </div>
+`).join('');
+    }
+
+    let chartMovimentacoes = null;
+
+    async function carregarGraficoMovimentacoes(periodo = 'mes') {
+      const res = await fetch('https://projeto-estoque-production.up.railway.app/api/movimentacoes', {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      if (!res.ok) return;
+
+      const movs = await res.json();
+      const now = new Date();
+      let labels = [], entradas = [], saidas = [];
+
+      if (periodo === 'dia') {
+        labels = Array.from({length: 24}, (_, i) => `${i}:00`);
+        entradas = Array(24).fill(0);
+        saidas = Array(24).fill(0);
+        movs.filter(mov => new Date(mov.created_at).toDateString() === now.toDateString())
+          .forEach(mov => {
+            const d = new Date(mov.created_at);
+            if (mov.tipo === 'entrada') entradas[d.getHours()] += mov.quantidade;
+            if (mov.tipo === 'saida') saidas[d.getHours()] += mov.quantidade;
+          });
+      } else if (periodo === 'semana') {
+        const dias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+        labels = dias;
+        entradas = Array(7).fill(0);
+        saidas = Array(7).fill(0);
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay());
+        movs.filter(mov => {
+          const d = new Date(mov.created_at);
+          const diff = Math.floor((d - startOfWeek) / (1000 * 60 * 60 * 24));
+          return diff >= 0 && diff < 7 && d.getFullYear() === now.getFullYear();
+        }).forEach(mov => {
+          const d = new Date(mov.created_at);
+          if (mov.tipo === 'entrada') entradas[d.getDay()] += mov.quantidade;
+          if (mov.tipo === 'saida') saidas[d.getDay()] += mov.quantidade;
+        });
+      } else if (periodo === 'ano') {
+        labels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+        entradas = Array(12).fill(0);
+        saidas = Array(12).fill(0);
+        movs.filter(mov => new Date(mov.created_at).getFullYear() === now.getFullYear())
+          .forEach(mov => {
+            const d = new Date(mov.created_at);
+            if (mov.tipo === 'entrada') entradas[d.getMonth()] += mov.quantidade;
+            if (mov.tipo === 'saida') saidas[d.getMonth()] += mov.quantidade;
+          });
+      } else {
+        const diasNoMes = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        labels = Array.from({length: diasNoMes}, (_, i) => `${i + 1}`);
+        entradas = Array(diasNoMes).fill(0);
+        saidas = Array(diasNoMes).fill(0);
+        movs.filter(mov => {
+          const d = new Date(mov.created_at);
+          return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        }).forEach(mov => {
+          const d = new Date(mov.created_at);
+          if (mov.tipo === 'entrada') entradas[d.getDate() - 1] += mov.quantidade;
+          if (mov.tipo === 'saida') saidas[d.getDate() - 1] += mov.quantidade;
+        });
+      }
+
+      const ctx = document.getElementById('canvas-movimentacoes').getContext('2d');
+      if (chartMovimentacoes) chartMovimentacoes.destroy();
+      chartMovimentacoes = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Entradas', data: entradas, backgroundColor: 'rgba(25, 135, 84, 0.7)', borderColor: '#198754', borderWidth: 1 },
+            { label: 'Saídas', data: saidas, backgroundColor: 'rgba(255, 193, 7, 0.7)', borderColor: '#ffc107', borderWidth: 1 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top' }
+          },
+          scales: {
+            x: { grid: { color: '#f0f0f0' } },
+            y: { beginAtZero: true, grid: { color: '#f0f0f0' } }
+          }
+        }
+      });
+    }
+
+    let chartMaisEntradas = null;
+    let chartMaisSaidas = null;
+
+    function gerarLegendaPizza(elementId, labels, data, colors) {
+      const ul = document.getElementById(elementId);
+      ul.innerHTML = '';
+      labels.forEach((label, i) => {
+        const color = colors[i % colors.length];
+        const value = data[i];
+        const li = document.createElement('li');
+        li.innerHTML = `<span class="legenda-pizza-cor" style="background:${color};"></span>${label} <span class="text-muted">(${value})</span>`;
+        ul.appendChild(li);
+      });
+    }
+
+    async function carregarGraficosPizza(periodo = 'mes') {
+      const res = await fetch('https://projeto-estoque-production.up.railway.app/api/movimentacoes', {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      if (!res.ok) return;
+
+      const movs = await res.json();
+      const now = new Date();
+      let filtroMovs = [];
+
+      if (periodo === 'dia') {
+        filtroMovs = movs.filter(mov => new Date(mov.created_at).toDateString() === now.toDateString());
+      } else if (periodo === 'semana') {
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay());
+        filtroMovs = movs.filter(mov => {
+          const d = new Date(mov.created_at);
+          const diff = Math.floor((d - startOfWeek) / (1000 * 60 * 60 * 24));
+          return diff >= 0 && diff < 7 && d.getFullYear() === now.getFullYear();
+        });
+      } else if (periodo === 'ano') {
+        filtroMovs = movs.filter(mov => new Date(mov.created_at).getFullYear() === now.getFullYear());
+      } else {
+        filtroMovs = movs.filter(mov => {
+          const d = new Date(mov.created_at);
+          return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        });
+      }
+
+      const saidasPorProduto = {};
+      filtroMovs.filter(m => m.tipo === 'saida').forEach(m => {
+        saidasPorProduto[m.produto_nome] = (saidasPorProduto[m.produto_nome] || 0) + m.quantidade;
+      });
+      let saidasArr = Object.entries(saidasPorProduto).sort((a, b) => b[1] - a[1]);
+      let topSaidas = saidasArr.slice(0, 9);
+      let outrosSaidas = saidasArr.slice(9).reduce((acc, cur) => acc + cur[1], 0);
+      if (outrosSaidas > 0) topSaidas.push(['Outros', outrosSaidas]);
+      const saidasLabels = topSaidas.map(e => e[0]);
+      const saidasData = topSaidas.map(e => e[1]);
+      const saidasColors = [
+        '#dc3545', '#fd7e14', '#ffc107', '#0dcaf0', '#20c997', '#198754', '#6f42c1', '#0d6efd', '#adb5bd', '#343a40'
+      ];
+      const ctxSaidas = document.getElementById('canvas-mais-saidas').getContext('2d');
+      if (chartMaisSaidas) chartMaisSaidas.destroy();
+      chartMaisSaidas = new Chart(ctxSaidas, {
+        type: 'pie',
+        data: {
+          labels: saidasLabels,
+          datasets: [{
+            data: saidasData,
+            backgroundColor: saidasColors
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+      gerarLegendaPizza('legenda-mais-saidas', saidasLabels, saidasData, saidasColors);
+
+      const entradasPorProduto = {};
+      filtroMovs.filter(m => m.tipo === 'entrada').forEach(m => {
+        entradasPorProduto[m.produto_nome] = (entradasPorProduto[m.produto_nome] || 0) + m.quantidade;
+      });
+      let entradasArr = Object.entries(entradasPorProduto).sort((a, b) => b[1] - a[1]);
+      let topEntradas = entradasArr.slice(0, 9);
+      let outrosEntradas = entradasArr.slice(9).reduce((acc, cur) => acc + cur[1], 0);
+      if (outrosEntradas > 0) topEntradas.push(['Outros', outrosEntradas]);
+      const entradasLabels = topEntradas.map(e => e[0]);
+      const entradasData = topEntradas.map(e => e[1]);
+      const entradasColors = [
+        '#198754', '#20c997', '#0dcaf0', '#ffc107', '#fd7e14', '#dc3545', '#6f42c1', '#0d6efd', '#adb5bd', '#343a40'
+      ];
+      const ctxEntradas = document.getElementById('canvas-mais-entradas').getContext('2d');
+      if (chartMaisEntradas) chartMaisEntradas.destroy();
+      chartMaisEntradas = new Chart(ctxEntradas, {
+        type: 'pie',
+        data: {
+          labels: entradasLabels,
+          datasets: [{
+            data: entradasData,
+            backgroundColor: entradasColors
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+      gerarLegendaPizza('legenda-mais-entradas', entradasLabels, entradasData, entradasColors);
+    }
+
+    document.getElementById('btn-exportar-csv').addEventListener('click', async () => {
+      const resProdutos = await fetch('https://projeto-estoque-production.up.railway.app/api/produtos', {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      let produtos = [];
+      if (resProdutos.ok) {
+        produtos = await resProdutos.json();
+      }
+
+      const res = await fetch('https://projeto-estoque-production.up.railway.app/api/movimentacoes', {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      if (!res.ok) return alert('Erro ao buscar dados');
+      const movs = await res.json();
+
+      const tipoSelecionados = [];
+      if (document.getElementById('relatorio-entrada').checked) tipoSelecionados.push('entrada');
+      if (document.getElementById('relatorio-saida').checked) tipoSelecionados.push('saida');
+      if (document.getElementById('relatorio-cadastro').checked) tipoSelecionados.push('cadastro');
+
+      const dataInicio = document.getElementById('relatorio-data-inicio').value;
+      const dataFim = document.getElementById('relatorio-data-fim').value;
+
+      let movsFiltrados = movs.filter(mov => {
+        const tipoOk = tipoSelecionados.includes(mov.tipo);
+        let dataOk = true;
+        if (dataInicio) dataOk = dataOk && new Date(mov.created_at) >= new Date(dataInicio);
+        if (dataFim) dataOk = dataOk && new Date(mov.created_at) <= new Date(dataFim + 'T23:59:59');
+        return tipoOk && dataOk;
+      });
+
+      const movsEnriquecidas = movsFiltrados.map(mov => {
+        const produto = produtos.find(p => p.id === mov.produto_id);
+        return {
+          ...mov,
+          categoria_produto: produto?.categoria || '',
+          marca_produto: produto?.marca || '',
+          localizacao_produto: produto?.localizacao_fisica || ''
+        };
+      });
+
+      const csv = gerarCSVMovimentacoes(movsEnriquecidas);
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'relatorio_movimentacoes.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('btn-exportar-pdf').addEventListener('click', () => {
+      const incluirGrafico = document.getElementById('incluirGrafico').checked;
+      exportarDashboardParaPDF({ incluirGrafico });
+    });
+
+    document.getElementById('filtroPeriodo').addEventListener('change', function() {
+      carregarGraficoMovimentacoes(this.value);
+      carregarGraficosPizza(this.value);
+    });
+
+    carregarDashboard();
+    carregarGraficoMovimentacoes();
+    carregarGraficosPizza();
+  </script>
+</body>
+</html>

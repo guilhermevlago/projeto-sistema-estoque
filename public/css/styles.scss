@@ -1,0 +1,549 @@
+// ====================
+// VARIÁVEIS
+// ====================
+:root {
+  --cor-primaria: #3f25cf;
+  --cor-secundaria: #0c007c;
+  --cor-sucesso: #06d6a0;
+  --cor-perigo: #ef476f;
+  --cor-aviso: #ffd166;
+  --cor-fundo: #f8f9fa;
+  --cor-texto-principal: #22223b;
+  --cor-texto-secundario: #6c757d;
+  --borda-radius: 0.75rem;
+  --sombra: 0 2px 8px rgba(34,34,59,0.08);
+  --espaco: 1rem;
+}
+
+// ====================
+// MIXINS
+// ====================
+@mixin sombra-suave {
+  box-shadow: var(--sombra);
+}
+
+@mixin borda-arredondada {
+  border-radius: var(--borda-radius);
+}
+
+// ====================
+// GLOBAL
+// ====================
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  background: #f8f9fa;
+  font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+  color: var(--cor-texto-principal);
+  display: flex;
+  flex-direction: column;
+}
+
+body.d-flex {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  color: var(--cor-texto-principal);
+  margin-bottom: 0.5em;
+}
+
+h1 {
+  position: relative;
+
+  &::after {
+    content: '';
+    display: block;
+    width: 48px;
+    height: 4px;
+    background: var(--cor-primaria);
+    border-radius: 2px;
+  }
+}
+
+a {
+  color: var(--cor-primaria);
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// ====================
+// COMPONENTES
+// ====================
+
+.card {
+  background: #fff;
+  @include borda-arredondada;
+  @include sombra-suave;
+  border: none;
+  margin-bottom: var(--espaco);
+}
+
+.badge {
+  font-size: 0.9em;
+  padding: 0.4em 0.7em;
+  border-radius: 0.5em;
+}
+
+// ====================
+// SIDEBAR
+// ====================
+#sidebar {
+  min-width: 260px;
+  max-width: 260px;
+  width: 100%;
+  background: var(--cor-primaria);
+  color: white;
+  padding: 1.5rem 1rem 1rem 1rem;
+  transition: all 0.2s;
+  @include sombra-suave;
+  flex-shrink: 0;
+  min-height: 100vh;
+  height: auto;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+
+  .nav {
+    margin-top: 2rem;
+    flex-grow: 1;
+
+    .nav-item + .nav-item {
+      margin-top: 0.5rem;
+    }
+
+    .nav-link {
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 1rem;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      transition: color 0.2s, box-shadow 0.2s;
+      position: relative;
+      text-decoration: none !important;
+
+      &:hover, &.active {
+        background: none;
+        color: var(--cor-aviso);
+        box-shadow: none;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.08);
+        transform: scale(1.08);
+      }
+
+      i {
+        font-size: 1.3em;
+        opacity: 0.85;
+        color: inherit;
+      }
+    }
+  }
+
+  h4 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 1px;
+    margin-bottom: 2rem;
+    text-shadow: 0 2px 8px rgba(67,97,238,0.10);
+  }
+}
+
+// Sidebar colapsada
+#sidebar.collapsed {
+  min-width: 60px;
+  max-width: 60px;
+  overflow-x: hidden;
+  transition: all 0.2s;
+
+  h4,
+  .nav-link span {
+    display: none !important;
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 0;
+  }
+
+  .nav-link {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    border-radius: 0.5rem;
+    width: 40px;
+    height: 40px;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.3em;
+    align-self: center;
+
+    i {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      color: inherit;
+    }
+  }
+}
+
+#toggle-sidebar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  margin: 0 auto 1.5rem auto;
+  background: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  color: #fff;
+  font-size: 1.4em;
+  box-shadow: 0 2px 8px rgba(67,97,238,0.10);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s;
+
+  &:hover {
+    background: var(--cor-primaria);
+    color: var(--cor-aviso);
+    transform: scale(1.08);
+    box-shadow: 0 4px 16px rgba(67,97,238,0.18);
+  }
+  
+  &:focus:not(:hover) {
+    background: transparent;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(67,97,238,0.10);
+    transform: none;
+    outline: none;
+  }
+}
+
+// ====================
+// CONTEÚDO PRINCIPAL
+// ====================
+#page-content {
+  flex-grow: 1;
+  padding: 1rem;
+  transition: margin 0.2s;
+  min-height: 100vh;
+  background: #f8f9fa;
+  margin: 0;
+}
+
+// ====================
+// TABLES
+// ====================
+.table {
+  background: #fff;
+  border-radius: var(--borda-radius);
+  overflow: hidden;
+  
+  th {
+    background: #f1f3f5;
+    color: var(--cor-texto-principal);
+    font-weight: 500;
+  }
+  
+  td, th {
+    vertical-align: middle;
+  }
+}
+
+// ====================
+// FORMS
+// ====================
+.form-label {
+  font-weight: 500;
+  color: var(--cor-texto-principal);
+}
+
+.form-control {
+  border-radius: var(--borda-radius);
+  border: 1px solid #dee2e6;
+  
+  &:focus {
+    border-color: var(--cor-primaria);
+    box-shadow: 0 0 0 0.2rem rgba(67,97,238,0.1);
+  }
+}
+
+// ====================
+// BUTTONS
+// ====================
+.btn {
+  border-radius: var(--borda-radius);
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s;
+}
+
+.btn-primary {
+  background: var(--cor-primaria);
+  border-color: var(--cor-primaria);
+  
+  &:hover {
+    background: var(--cor-secundaria);
+    border-color: var(--cor-secundaria);
+  }
+}
+
+// ====================
+// DASHBOARD
+// ====================
+.chart-container {
+  min-height: 0;
+  height: 490px;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#canvas-movimentacoes {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 830px;
+  min-width: 0;
+}
+
+.dashboard-grafico-mov {
+  height: 530px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 2.25rem;
+}
+
+.col-lg-6.d-flex.flex-column.justifique-content-between {
+  height: 530px;
+}
+
+.dashboard-grafico-pizza {
+  min-height: 0;
+  height: 255px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  background: #fff;
+  border-radius: var(--borda-radius);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  padding: 2.25rem;
+}
+
+.pizza-container {
+  width: 180px;
+  height: 180px;
+  margin: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#legenda-mais-entradas,
+#legenda-mais-saidas {
+  margin-left: 2rem;
+  margin-bottom: 0;
+  list-style: none;
+  font-size: 0.92em;
+  word-break: break-word;
+  flex-grow: 1;
+  align-self: flex-start;
+  min-width: 0;
+}
+
+#legenda-mais-entradas li,
+#legenda-mais-saidas li {
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legenda-pizza-cor {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 7px;
+  vertical-align: middle;
+  border: 1px solid #ccc;
+}
+
+.relatorio-dashboard {
+  margin: 5px !important;
+  margin-bottom: 0 !important;
+  padding: 0.7rem !important;
+}
+
+.dashboard-graficos, 
+.dashboard-grafico-mov, 
+.dashboard-grafico-pizza {
+  margin-top: 10px !important;
+}
+
+#mais-entradas-container {
+  margin: 0 !important;
+}
+
+// ====================
+// PÁGINA INÍCIO - OPERADORES
+// ====================
+#secao-operador {
+  .btn-lg {
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    i {
+      font-size: 1.3em;
+    }
+  }
+  
+  .table {
+    font-size: 0.95rem;
+    
+    th {
+      font-weight: 600;
+      background: #f8f9fa;
+      border-top: none;
+    }
+    
+    .badge {
+      font-size: 0.8rem;
+      padding: 0.35rem 0.6rem;
+      
+      i {
+        margin-right: 0.2rem;
+      }
+    }
+  }
+  
+  #busca-rapida {
+    border-radius: 0.5rem;
+    border: 1px solid #dee2e6;
+    transition: border-color 0.3s ease;
+    
+    &:focus {
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 0.2rem rgba(63, 37, 207, 0.1);
+    }
+  }
+}
+
+// ====================
+// MEDIA QUERIES
+// ====================
+
+// Desktop grande
+@media (max-width: 1400px) {
+  .chart-container { max-width: 680px; }
+  #canvas-movimentacoes { max-width: 680px; }
+  #dashboard-cards .small-card { max-width: 105px; }
+  .dashboard-grafico-pizza { height: 195px; }
+  .pizza-container { width: 120px; height: 120px; }
+}
+
+// Tablet
+@media (max-width: 991.98px) {
+  #sidebar {
+    min-width: 200px;
+    max-width: 220px;
+  }
+  
+  #page-content {
+    margin-left: 220px;
+  }
+  
+  .chart-container { max-width: 100%; }
+  #canvas-movimentacoes { max-width: 100%; }
+  #dashboard-cards .small-card { max-width: 80px; }
+
+  .dashboard-grafico-pizza {
+    flex-direction: row;
+    align-items: flex-start;
+    height: 135px;
+    padding: 1.1rem;
+  }
+
+  .pizza-container {
+    width: 75px;
+    height: 75px;
+  }
+}
+
+// Mobile
+@media (max-width: 767.98px) {
+  #sidebar {
+    min-width: 120px;
+    max-width: 140px;
+    padding: 1rem 0.5rem;
+  }
+  
+  #page-content {
+    margin-left: 140px;
+    padding: 1rem;
+  }
+  
+  #dashboard-cards .small-card { max-width: 100%; }
+  .chart-container { min-height: 195px; height: 195px; }
+  #canvas-movimentacoes { max-width: 100%; height: 120px !important; }
+
+  .dashboard-grafico-pizza {
+    flex-direction: column;
+    align-items: center;
+    height: 105px;
+    padding: 0.6rem;
+  }
+
+  .pizza-container {
+    width: 50px;
+    height: 50px;
+  }
+  
+  #secao-operador {
+    .btn-lg {
+      font-size: 1rem;
+      padding: 0.8rem 1.2rem;
+    }
+    
+    .table {
+      font-size: 0.85rem;
+    }
+  }
+}

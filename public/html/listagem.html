@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lista de Produtos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body class="d-flex" data-page="listagem">
+
+  <div id="navbar-placeholder"></div>
+  <script src="../js/navbar.js"></script>
+
+  <div id="page-content" class="flex-grow-1 p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="mb-0">Lista de Produtos</h1>
+      <a href="cadastro.html" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Novo Produto
+      </a>
+    </div>
+
+    <form class="mb-3" id="formFiltro">
+      <div class="row g-2 align-items-center">
+        <div class="col-auto">
+          <input type="text" class="form-control" id="filtroBusca" placeholder="Buscar por nome ou SKU">
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-outline-secondary">
+            <i class="bi bi-search"></i> Buscar
+          </button>
+        </div>
+        <div class="col-auto">
+          <select class="form-select" id="filtroCategoria">
+            <option value="">Todas as Categorias</option>
+          </select>
+        </div>
+        <div class="col-auto">
+          <select class="form-select" id="filtroLocalizacao">
+            <option value="">Todas as Localizações</option>
+          </select>
+        </div>
+        <div class="col-auto">
+          <select class="form-select" id="filtroMarca">
+            <option value="">Todas as Marcas</option>
+          </select>
+        </div>
+        <div class="col-auto">
+          <button type="button" id="btn-estoque-alerta" class="btn btn-outline-warning">
+            <i class="bi bi-exclamation-triangle"></i> Visualizar Estoque em Alerta
+          </button>
+        </div>
+        <div class="col-auto">
+          <button type="button" id="btn-limpar-filtros" class="btn btn-outline-danger">
+            <i class="bi bi-x-circle"></i> Limpar Filtros
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <div class="bg-white p-4 rounded-4 shadow-sm">
+      <table class="table table-hover align-middle mb-0" id="tabelaProdutos">
+        <thead class="table-light">
+          <tr>
+            <th scope="col">SKU</th>
+            <th scope="col">Nome</th>
+            <th scope="col">Categoria</th>
+            <th scope="col">Marca</th>
+            <th scope="col">Localização</th>
+            <th scope="col">Preço de Venda</th>
+            <th scope="col">Estoque</th>
+            <th scope="col">Ações</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div id="paginacaoProdutos" class="mt-3 d-flex justify-content-center"></div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalVisualizarProduto" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Detalhes do Produto</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <dl class="row">
+            <dt class="col-5">SKU</dt>
+            <dd class="col-7" id="visuSku"></dd>
+            <dt class="col-5">Nome</dt>
+            <dd class="col-7" id="visuNome"></dd>
+            <dt class="col-5">Descrição</dt>
+            <dd class="col-7" id="visuDescricao"></dd>
+            <dt class="col-5">Categoria</dt>
+            <dd class="col-7" id="visuCategoria"></dd>
+            <dt class="col-5">Marca</dt>
+            <dd class="col-7" id="visuMarca"></dd>
+            <dt class="col-5">Localização</dt>
+            <dd class="col-7" id="visuLocalizacao"></dd>
+            <dt class="col-5">Preço de Venda</dt>
+            <dd class="col-7" id="visuPreco"></dd>
+            <dt class="col-5">Estoque Atual</dt>
+            <dd class="col-7" id="visuEstoque"></dd>
+            <dt class="col-5">Estoque Mínimo</dt>
+            <dd class="col-7" id="visuEstoqueMinimo"></dd>
+            <dt class="col-5">É Kit?</dt>
+            <dd class="col-7" id="visuEhKit"></dd>
+            <dt class="col-5">Itens por Kit</dt>
+            <dd class="col-7" id="visuQtdKit"></dd>
+          </dl>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalEditarProduto" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="formEditarProduto">
+          <div class="modal-header">
+            <h5 class="modal-title">Editar Produto</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">SKU</label>
+              <input type="text" class="form-control" id="editarSku" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Nome</label>
+              <input type="text" class="form-control" id="editarNome" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Descrição</label>
+              <textarea class="form-control" id="editarDescricao" rows="2"></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Categoria</label>
+              <input type="text" class="form-control" id="editarCategoria" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Marca</label>
+              <input type="text" class="form-control" id="editarMarca">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Localização</label>
+              <select class="form-control" id="editarLocalizacao" required>
+                <option value="">Selecione um local</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Preço de Venda</label>
+              <input type="number" class="form-control" id="editarPreco" min="0" step="0.01" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Estoque</label>
+              <input type="number" class="form-control" id="editarEstoque" min="0" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Estoque Mínimo</label>
+              <input type="number" class="form-control" id="editarEstoqueMinimo" min="0">
+            </div>
+            <div class="mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="editarEhKit">
+                <label class="form-check-label" for="editarEhKit">Produto é um Kit</label>
+              </div>
+            </div>
+            <div class="mb-3" id="editarQtdKitContainer" style="display: none;">
+              <label class="form-label" for="editarQtdKit">Quantidade de itens por Kit</label>
+              <input type="number" class="form-control" id="editarQtdKit" min="1">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/utils.js"></script>
+  <script>
+    verificarLogin({ redirect: '../index.html' });
+
+    let produtos = [];
+    let paginaAtual = 1;
+    const itensPorPagina = 10;
+
+    async function carregarProdutos() {
+      const tbody = document.querySelector('#tabelaProdutos tbody');
+      tbody.innerHTML = '<tr><td colspan="8">Carregando...</td></tr>';
+      try {
+        const res = await fetch('https://projeto-estoque-production.up.railway.app/api/produtos', {
+          headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
+        });
+        if (res.ok) {
+          produtos = await res.json();
+          paginaAtual = 1;
+          preencherFiltros(produtos);
+          renderizarTabela(produtos);
+        } else {
+          tbody.innerHTML = '<tr><td colspan="8" class="text-danger">Erro ao carregar produtos.</td></tr>';
+        }
+      } catch {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-danger">Erro ao conectar ao servidor.</td></tr>';
+      }
+    }
+
+    async function preencherFiltros(lista) {
+      const categorias = [...new Set(lista.map(p => p.categoria).filter(Boolean))].sort();
+      const marcas = [...new Set(lista.map(p => p.marca).filter(Boolean))].sort();
+
+      const selCategoria = document.getElementById('filtroCategoria');
+      const selMarca = document.getElementById('filtroMarca');
+
+      selCategoria.innerHTML = '<option value="">Todas as Categorias</option>' +
+        categorias.map(c => `<option value="${c}">${c}</option>`).join('');
+      selMarca.innerHTML = '<option value="">Todas as Marcas</option>' +
+        marcas.map(m => `<option value="${m}">${m}</option>`).join('');
+
+      try {
+        const locais = await fetchLocaisAtivos(localStorage.getItem('token'));
+        const selLocalizacao = document.getElementById('filtroLocalizacao');
+        selLocalizacao.innerHTML = '<option value="">Todas as Localizações</option>' +
+          locais.map(l => `<option value="${l.nome}">${l.nome}</option>`).join('');
+      } catch {
+        const localizacoes = [...new Set(lista.map(p => p.localizacao_fisica).filter(Boolean))].sort();
+        const selLocalizacao = document.getElementById('filtroLocalizacao');
+        selLocalizacao.innerHTML = '<option value="">Todas as Localizações</option>' +
+          localizacoes.map(l => `<option value="${l}">${l}</option>`).join('');
+      }
+    }
+
+    function renderizarTabela(lista) {
+      const tbody = document.querySelector('#tabelaProdutos tbody');
+      const paginacao = document.getElementById('paginacaoProdutos');
+      if (!lista.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">Nenhum produto encontrado.</td></tr>';
+        paginacao.innerHTML = '';
+        return;
+      }
+
+      const totalPaginas = Math.ceil(lista.length / itensPorPagina);
+      if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
+      if (paginaAtual < 1) paginaAtual = 1;
+      const inicio = (paginaAtual - 1) * itensPorPagina;
+      const fim = inicio + itensPorPagina;
+      const pagina = lista.slice(inicio, fim);
+
+      tbody.innerHTML = pagina.map(produto => {
+        const alertaEstoque = produto.estoque_atual !== null && produto.estoque_minimo !== null && produto.estoque_atual <= produto.estoque_minimo;
+        return `
+          <tr data-id="${produto.id}">
+            <td>
+              ${produto.sku}
+              ${alertaEstoque ? '<i class="bi bi-exclamation-triangle-fill text-warning ms-1" title="Estoque baixo"></i>' : ''}
+            </td>
+            <td>${produto.nome}</td>
+            <td>${produto.categoria || '-'}</td>
+            <td>${produto.marca || '-'}</td>
+            <td>${produto.localizacao_fisica || '-'}</td>
+            <td>${formatarMoeda(produto.preco_venda)}</td>
+            <td>${produto.estoque_atual ?? '-'}</td>
+            <td>
+              <a href="#" class="btn btn-sm btn-outline-info me-1 btn-visualizar-produto" title="Visualizar"><i class="bi bi-eye"></i></a>
+              <a href="#" class="btn btn-sm btn-outline-primary me-1 btn-editar-produto" title="Editar"><i class="bi bi-pencil"></i></a>
+              <a href="#" class="btn btn-sm btn-outline-danger btn-excluir-produto" title="Excluir"><i class="bi bi-trash"></i></a>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      let htmlPaginacao = '';
+      if (totalPaginas > 1) {
+        htmlPaginacao += `<nav><ul class="pagination mb-0">`;
+        htmlPaginacao += `<li class="page-item${paginaAtual === 1 ? ' disabled' : ''}">
+          <a class="page-link" href="#" data-pagina="${paginaAtual - 1}">&laquo;</a></li>`;
+        for (let i = 1; i <= totalPaginas; i++) {
+          htmlPaginacao += `<li class="page-item${i === paginaAtual ? ' active' : ''}">
+            <a class="page-link" href="#" data-pagina="${i}">${i}</a></li>`;
+        }
+        htmlPaginacao += `<li class="page-item${paginaAtual === totalPaginas ? ' disabled' : ''}">
+          <a class="page-link" href="#" data-pagina="${paginaAtual + 1}">&raquo;</a></li>`;
+        htmlPaginacao += `</ul></nav>`;
+      }
+      paginacao.innerHTML = htmlPaginacao;
+
+      paginacao.querySelectorAll('.page-link').forEach(link => {
+        link.onclick = function(e) {
+          e.preventDefault();
+          const pag = parseInt(this.getAttribute('data-pagina'));
+          if (!isNaN(pag) && pag >= 1 && pag <= totalPaginas && pag !== paginaAtual) {
+            paginaAtual = pag;
+            renderizarTabela(lista);
+          }
+        };
+      });
+    }
+
+    document.getElementById('formFiltro').addEventListener('submit', function(e) {
+      e.preventDefault();
+      aplicarFiltros();
+    });
+    document.getElementById('filtroCategoria').addEventListener('change', aplicarFiltros);
+    document.getElementById('filtroLocalizacao').addEventListener('change', aplicarFiltros);
+    document.getElementById('filtroMarca').addEventListener('change', aplicarFiltros);
+
+    function aplicarFiltros() {
+      const termo = document.getElementById('filtroBusca').value.trim().toLowerCase();
+      const categoria = document.getElementById('filtroCategoria').value;
+      const localizacao = document.getElementById('filtroLocalizacao').value;
+      const marca = document.getElementById('filtroMarca').value;
+      paginaAtual = 1;
+      let filtrados = produtos;
+      if (termo) {
+        filtrados = filtrados.filter(p =>
+          (p.nome && p.nome.toLowerCase().includes(termo)) ||
+          (p.sku && p.sku.toLowerCase().includes(termo))
+        );
+      }
+      if (categoria) filtrados = filtrados.filter(p => p.categoria === categoria);
+      if (localizacao) filtrados = filtrados.filter(p => p.localizacao_fisica === localizacao);
+      if (marca) filtrados = filtrados.filter(p => p.marca === marca);
+      renderizarTabela(filtrados);
+    }
+
+    document.getElementById('btn-limpar-filtros').addEventListener('click', function() {
+      document.getElementById('filtroBusca').value = '';
+      document.getElementById('filtroCategoria').value = '';
+      document.getElementById('filtroLocalizacao').value = '';
+      document.getElementById('filtroMarca').value = '';
+      paginaAtual = 1;
+      renderizarTabela(produtos);
+    });
+
+    document.getElementById('btn-estoque-alerta').addEventListener('click', function() {
+      const alerta = produtos.filter(p => p.estoque_atual !== null && p.estoque_minimo !== null && p.estoque_atual <= p.estoque_minimo);
+      paginaAtual = 1;
+      renderizarTabela(alerta);
+    });
+
+    document.getElementById('tabelaProdutos').addEventListener('click', function(e) {
+      if (e.target.closest('.btn-visualizar-produto')) {
+        e.preventDefault();
+        const tr = e.target.closest('tr');
+        const id = tr.getAttribute('data-id');
+        const produto = produtos.find(p => p.id == id);
+        if (!produto) return;
+        document.getElementById('visuSku').textContent = produto.sku || '-';
+        document.getElementById('visuNome').textContent = produto.nome || '-';
+        document.getElementById('visuDescricao').textContent = produto.descricao || '-';
+        document.getElementById('visuCategoria').textContent = produto.categoria || '-';
+        document.getElementById('visuMarca').textContent = produto.marca || '-';
+        document.getElementById('visuLocalizacao').textContent = produto.localizacao_fisica || '-';
+        document.getElementById('visuPreco').textContent = produto.preco_venda !== undefined ? 'R$ ' + produto.preco_venda.toLocaleString('pt-BR', {minimumFractionDigits: 2}) : '-';
+        document.getElementById('visuEstoque').textContent = produto.estoque_atual ?? '-';
+        document.getElementById('visuEstoqueMinimo').textContent = produto.estoque_minimo ?? '-';
+        document.getElementById('visuEhKit').textContent = produto.eh_kit ? 'Sim' : 'Não';
+        document.getElementById('visuQtdKit').textContent = produto.eh_kit ? (produto.quantidade_por_kit ?? '-') : '-';
+        const modal = new bootstrap.Modal(document.getElementById('modalVisualizarProduto'));
+        modal.show();
+      }
+    });
+
+    document.getElementById('tabelaProdutos').addEventListener('click', function(e) {
+      if (e.target.closest('.btn-editar-produto')) {
+        e.preventDefault();
+        const tr = e.target.closest('tr');
+        const id = tr.getAttribute('data-id');
+        const produto = produtos.find(p => p.id == id);
+        if (!produto) return;
+        
+        preencherSelectLocais('editarLocalizacao', localStorage.getItem('token')).then(() => {
+          document.getElementById('editarLocalizacao').value = produto.localizacao_fisica || '';
+        });
+        
+        document.getElementById('editarSku').value = produto.sku;
+        document.getElementById('editarNome').value = produto.nome;
+        document.getElementById('editarDescricao').value = produto.descricao || '';
+        document.getElementById('editarCategoria').value = produto.categoria || '';
+        document.getElementById('editarMarca').value = produto.marca || '';
+        document.getElementById('editarPreco').value = produto.preco_venda ?? '';
+        document.getElementById('editarEstoque').value = produto.estoque_atual ?? '';
+        document.getElementById('editarEstoqueMinimo').value = produto.estoque_minimo ?? '';
+        document.getElementById('editarEhKit').checked = !!produto.eh_kit;
+        document.getElementById('editarQtdKit').value = produto.eh_kit ? (produto.quantidade_por_kit ?? '') : '';
+        document.getElementById('editarQtdKitContainer').style.display = produto.eh_kit ? '' : 'none';
+        document.getElementById('formEditarProduto').setAttribute('data-id', id);
+        const modal = new bootstrap.Modal(document.getElementById('modalEditarProduto'));
+        modal.show();
+      }
+    });
+
+    document.getElementById('editarEhKit').addEventListener('change', function() {
+      document.getElementById('editarQtdKitContainer').style.display = this.checked ? '' : 'none';
+      if (!this.checked) document.getElementById('editarQtdKit').value = '';
+    });
+
+    document.getElementById('formEditarProduto').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const id = this.getAttribute('data-id');
+      const sku = document.getElementById('editarSku').value.trim();
+      const nome = document.getElementById('editarNome').value.trim();
+      const descricao = document.getElementById('editarDescricao').value.trim();
+      const categoria = document.getElementById('editarCategoria').value.trim();
+      const marca = document.getElementById('editarMarca').value.trim();
+      const localizacao_fisica = document.getElementById('editarLocalizacao').value.trim();
+      const preco_venda = parseFloat(document.getElementById('editarPreco').value);
+      const estoque_atual = parseInt(document.getElementById('editarEstoque').value, 10) || 0;
+      const estoque_minimo = parseInt(document.getElementById('editarEstoqueMinimo').value, 10) || 0;
+      const eh_kit = document.getElementById('editarEhKit').checked ? 1 : 0;
+      const quantidade_por_kit = eh_kit ? parseInt(document.getElementById('editarQtdKit').value, 10) : null;
+
+      if (!nome || isNaN(preco_venda)) {
+        alert('Preencha todos os campos obrigatórios.');
+        return;
+      }
+      if (eh_kit && (isNaN(quantidade_por_kit) || quantidade_por_kit < 1)) {
+        alert('Informe a quantidade de itens por kit.');
+        return;
+      }
+
+      try {
+        const response = await fetch(`https://projeto-estoque-production.up.railway.app/api/produtos/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('token')
+          },
+          body: JSON.stringify({
+            sku,
+            nome,
+            descricao,
+            categoria,
+            marca,
+            localizacao_fisica,
+            preco_venda,
+            estoque_atual,
+            estoque_minimo,
+            eh_kit,
+            quantidade_por_kit
+          })
+        });
+        if (response.ok) {
+          alert('Produto atualizado com sucesso!');
+          bootstrap.Modal.getInstance(document.getElementById('modalEditarProduto')).hide();
+          carregarProdutos();
+        } else {
+          const data = await response.json();
+          alert(data.error || 'Erro ao atualizar produto.');
+        }
+      } catch {
+        alert('Erro ao conectar ao servidor.');
+      }
+    });
+
+    document.getElementById('tabelaProdutos').addEventListener('click', async function(e) {
+      if (e.target.closest('.btn-excluir-produto')) {
+        e.preventDefault();
+        const tr = e.target.closest('tr');
+        const id = tr.getAttribute('data-id');
+        if (confirm('Tem certeza que deseja excluir este produto?')) {
+          try {
+            const response = await fetch(`https://projeto-estoque-production.up.railway.app/api/produtos/${id}`, {
+              method: 'DELETE',
+              headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+            });
+            if (response.ok) {
+              alert('Produto excluído com sucesso!');
+              carregarProdutos();
+            } else {
+              const data = await response.json();
+              alert(data.error || 'Erro ao excluir produto.');
+            }
+          } catch {
+            alert('Erro ao conectar ao servidor.');
+          }
+        }
+      }
+    });
+
+    carregarProdutos().then(() => {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('alerta') === '1') {
+        document.getElementById('btn-estoque-alerta').click();
+      }
+    });
+  </script>
+</body>
+</html>
