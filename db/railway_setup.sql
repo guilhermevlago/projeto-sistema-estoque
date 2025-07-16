@@ -1,13 +1,8 @@
 -- ===================================================
--- BANCO DO SISTEMA DE ESTOQUE - TCC SENAI
+-- SCRIPT PARA RAILWAY - SISTEMA DE ESTOQUE
 -- ===================================================
 
--- Criação do banco de dados (no Railway usar o banco 'railway' existente)
--- CREATE DATABASE IF NOT EXISTS contro_estoque
---   DEFAULT CHARACTER SET utf8mb4
---   COLLATE utf8mb4_unicode_ci;
-
--- Seleciona o banco (no Railway será 'railway')
+-- No Railway, o banco 'railway' já existe
 USE railway;
 
 -- ===================================================
@@ -87,11 +82,10 @@ CREATE TABLE `movimentacao` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ===================================================
--- DADOS INICIAIS PRA TESTAR
+-- DADOS INICIAIS
 -- ===================================================
 
 -- Usuario admin padrão
--- TROCAR A SENHA DEPOIS!
 INSERT INTO usuario (nome, usuario, senha, perfil) VALUES 
 ('Admin do Sistema', 'admin', 'admin123', 3);
 
@@ -107,9 +101,9 @@ INSERT INTO local_estoque (nome, ativo) VALUES
 ('Área de Expedição', 1),
 ('Quarentena', 1);
 
--- Alguns produtos de exemplo pra testar
+-- Alguns produtos de exemplo
 INSERT INTO produto (sku, nome, descricao, categoria, marca, localizacao_fisica, preco_venda, estoque_atual, estoque_minimo, eh_kit, quantidade_por_kit) VALUES 
-('PROD001', 'Notebook Dell', 'Notebook pra trabalho', 'Informática', 'Dell', 'Estoque Principal', 2500.00, 10, 5, 0, NULL),
+('PROD001', 'Notebook Dell', 'Notebook para trabalho', 'Informática', 'Dell', 'Estoque Principal', 2500.00, 10, 5, 0, NULL),
 ('PROD002', 'Mouse Logitech', 'Mouse sem fio', 'Informática', 'Logitech', 'Estoque Principal', 89.90, 25, 10, 0, NULL),
 ('PROD003', 'Kit Completo', 'Notebook + mouse', 'Informática', 'Vários', 'Estoque Principal', 2650.00, 5, 2, 1, 2),
 ('PROD004', 'Papel A4', 'Resma 500 folhas', 'Papelaria', 'Chamex', 'Almoxarifado', 25.90, 100, 20, 0, NULL);
@@ -120,54 +114,15 @@ INSERT INTO movimentacao (produto_id, tipo, quantidade, responsavel_id, motivo, 
 (2, 'entrada', 25, 1, 'Compra inicial', 'Primeira entrada'),
 (3, 'entrada', 5, 1, 'Compra inicial', 'Primeira entrada'),
 (4, 'entrada', 100, 1, 'Compra inicial', 'Primeira entrada'),
-(1, 'saida', 2, 2, 'Venda', 'Vendido pra cliente'),
+(1, 'saida', 2, 2, 'Venda', 'Vendido para cliente'),
 (2, 'saida', 5, 2, 'Venda', 'Junto com os notebooks');
 
 -- ===================================================
--- VERIFICANDO SE DEU CERTO
+-- VERIFICAÇÃO
 -- ===================================================
 
--- Mostra os usuários
-SELECT 'USUÁRIOS:' as info;
-SELECT id, nome, usuario, perfil FROM usuario;
-
--- Mostra os locais
-SELECT 'LOCAIS:' as info;
-SELECT id, nome, ativo FROM local_estoque;
-
--- Mostra os produtos
-SELECT 'PRODUTOS:' as info;
-SELECT id, sku, nome, categoria, estoque_atual FROM produto;
-
--- Mostra as movimentações
-SELECT 'MOVIMENTAÇÕES:' as info;
-SELECT m.id, p.nome as produto, m.tipo, m.quantidade, u.nome as responsavel 
-FROM movimentacao m 
-JOIN produto p ON m.produto_id = p.id 
-JOIN usuario u ON m.responsavel_id = u.id;
-
--- ===================================================
--- INFORMAÇÕES
--- ===================================================
-
-/*
-LOGIN PADRÃO:
-- Usuário: admin
-- Senha: admin123
-
-TIPOS DE USUÁRIO:
-- 1 = Operador (só consulta e movimentação)
-- 2 = Supervisor (cadastra e vê relatórios)
-- 3 = Admin (faz tudo)
-
-PRÓXIMOS PASSOS:
-1. Configura o .env
-2. npm install
-3. npm start
-4. http://localhost:3001
-5. TROCA A SENHA DO ADMIN!
-
-OBS:
-- As senhas tão simples só pra facilitar o teste
-- JWT_SECRET pode ser qualquer coisa no .env
-*/
+SELECT 'SETUP CONCLUÍDO NO RAILWAY!' as status;
+SELECT COUNT(*) as total_usuarios FROM usuario;
+SELECT COUNT(*) as total_produtos FROM produto;
+SELECT COUNT(*) as total_locais FROM local_estoque;
+SELECT COUNT(*) as total_movimentacoes FROM movimentacao;

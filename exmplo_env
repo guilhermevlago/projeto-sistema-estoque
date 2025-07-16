@@ -10,3 +10,5 @@ JWT_SECRET=minha_chave_secreta_jwt
 
 # Porta do servidor
 PORT=3001
+
+#altere o nome dese arquivo para .env
