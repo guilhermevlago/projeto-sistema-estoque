@@ -9,7 +9,7 @@ function verificarLogin({ redirect = '../index.html', perfilPermitido = null } =
 
 // Busca produtos da API
 async function fetchProdutos(token) {
-  const res = await fetch('https://projeto-estoque-production.up.railway.app/api/produtos', {
+  const res = await fetch('https://projeto-sistema-estoque-production.up.railway.app/api/produtos', {
     headers: { Authorization: 'Bearer ' + token }
   });
   if (!res.ok) throw new Error('Erro ao buscar produtos');
@@ -18,7 +18,7 @@ async function fetchProdutos(token) {
 
 // Função para buscar locais ativos
 async function fetchLocaisAtivos(token) {
-  const res = await fetch('https://projeto-estoque-production.up.railway.app/api/locais', {
+  const res = await fetch('https://projeto-sistema-estoque-production.up.railway.app/api/locais', {
     headers: { Authorization: 'Bearer ' + token }
   });
   if (!res.ok) throw new Error('Erro ao buscar locais');

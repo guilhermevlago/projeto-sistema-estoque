@@ -83,7 +83,7 @@
       const tbody = document.querySelector('#tabelaLocais tbody');
       tbody.innerHTML = '<tr><td colspan="3">Carregando...</td></tr>';
       try {
-        const res = await fetch('https://projeto-estoque-production.up.railway.app/api/locais', {
+        const res = await fetch('https://projeto-sistema-estoque-production.up.railway.app/api/locais', {
           headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
         });
         if (res.ok) {
@@ -164,7 +164,7 @@
         const id = tr.getAttribute('data-id');
         if (confirm('Tem certeza que deseja excluir este local?')) {
           try {
-            const response = await fetch(`https://projeto-estoque-production.up.railway.app/api/locais/${id}`, {
+            const response = await fetch(`https://projeto-sistema-estoque-production.up.railway.app/api/locais/${id}`, {
               method: 'DELETE',
               headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
             });
@@ -195,7 +195,7 @@
       try {
         let response;
         if (id) {
-          response = await fetch(`https://projeto-estoque-production.up.railway.app/api/locais/${id}`, {
+          response = await fetch(`https://projeto-sistema-estoque-production.up.railway.app/api/locais/${id}`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -204,7 +204,7 @@
             body: JSON.stringify({ nome, ativo })
           });
         } else {
-          response = await fetch('https://projeto-estoque-production.up.railway.app/api/locais', {
+          response = await fetch('https://projeto-sistema-estoque-production.up.railway.app/api/locais', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

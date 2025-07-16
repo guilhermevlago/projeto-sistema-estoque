@@ -200,7 +200,7 @@
       const tbody = document.querySelector('#tabelaProdutos tbody');
       tbody.innerHTML = '<tr><td colspan="8">Carregando...</td></tr>';
       try {
-        const res = await fetch('https://projeto-estoque-production.up.railway.app/api/produtos', {
+        const res = await fetch('https://projeto-sistema-estoque-production.up.railway.app/api/produtos', {
           headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
         });
         if (res.ok) {
@@ -431,7 +431,7 @@
       }
 
       try {
-        const response = await fetch(`https://projeto-estoque-production.up.railway.app/api/produtos/${id}`, {
+        const response = await fetch(`https://projeto-sistema-estoque-production.up.railway.app/api/produtos/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -471,7 +471,7 @@
         const id = tr.getAttribute('data-id');
         if (confirm('Tem certeza que deseja excluir este produto?')) {
           try {
-            const response = await fetch(`https://projeto-estoque-production.up.railway.app/api/produtos/${id}`, {
+            const response = await fetch(`https://projeto-sistema-estoque-production.up.railway.app/api/produtos/${id}`, {
               method: 'DELETE',
               headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
             });

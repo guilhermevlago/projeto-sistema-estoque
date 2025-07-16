@@ -71,7 +71,7 @@ async function exportarDashboardParaPDF({ incluirGrafico = false } = {}) {
 
   const token = localStorage.getItem('token');
   
-  const resProdutos = await fetch('https://projeto-estoque-production.up.railway.app/api/produtos', {
+  const resProdutos = await fetch('https://projeto-sistema-estoque-production.up.railway.app/api/produtos', {
     headers: { Authorization: 'Bearer ' + token }
   });
   let produtos = [];
@@ -79,7 +79,7 @@ async function exportarDashboardParaPDF({ incluirGrafico = false } = {}) {
     produtos = await resProdutos.json();
   }
   
-  const res = await fetch('https://projeto-estoque-production.up.railway.app/api/movimentacoes', {
+  const res = await fetch('https://projeto-sistema-estoque-production.up.railway.app/api/movimentacoes', {
     headers: { Authorization: 'Bearer ' + token }
   });
   if (!res.ok) {
